@@ -1,6 +1,6 @@
-# ==============================================================
-# Section 7.1 — Multicollinearity diagnostics for Pima (augmented)
-# ==============================================================
+
+# Section 7.1 — Multicollinearity diagnostics for Pima 
+
 
 library(mlbench)
 data(PimaIndiansDiabetes)
@@ -14,7 +14,7 @@ dat <- na.omit(dat)  # n = 392
 y <- as.integer(dat$diabetes == "pos")
 age <- dat$age
 
-# ── Augmented design matrix (p = 10) ─────────────────────────
+
 X_base <- as.matrix(dat[, c("pregnant","glucose","pressure","triceps",
                             "insulin","mass","pedigree")])
 
@@ -35,7 +35,7 @@ cat(sprintf("Positive cases: %d (%.1f%%)\n", sum(y), 100*mean(y)))
 dir.create("figures_real", showWarnings = FALSE)
 dir.create("tables_real", showWarnings = FALSE)
 
-# ── Multicollinearity diagnostics ────────────────────────────
+# ── Multicollinearity diagnostics
 
 corr_mat <- cor(X)
 XtX <- t(X) %*% X
@@ -68,7 +68,7 @@ diag_table <- data.frame(
 )
 write.csv(diag_table, "tables_real/table_real_diagnostics.csv", row.names = FALSE)
 
-# ── 2x2 diagnostic figure ────────────────────────────────────
+
 
 png("figures_real/fig_diagnostics.png", width = 1100, height = 950, res = 120)
 par(mfrow = c(2, 2), mar = c(5, 4.5, 3, 1.5), oma = c(0, 0, 1, 0))
@@ -137,13 +137,6 @@ cat("\nFigure saved to figures_real/fig_diagnostics.png\n")
 
 
 
-# ==============================================================
-# Section 7.2 — Real Data Results (Pima, augmented)
-# Assumes: simulation functions are already loaded
-#          (build_smoother, irls_converge, ridge_at_k, sel_crit,
-#           fit_par_ridge, logit, expit, clip_p)
-# Assumes: y, X, age loaded from Section 7.1
-# ==============================================================
 
 # Scale age to [0,1] for the nonparametric component
 t_vec <- (age - min(age)) / (max(age) - min(age))
@@ -156,7 +149,7 @@ k_grid_real <- seq(0, 2.0, by = 0.05)
 dir.create("figures_real", showWarnings = FALSE)
 dir.create("tables_real",      showWarnings = FALSE)
 
-# ── 1. GCV-optimal (h, k) for IWSRTE ─────────────────────────
+# ── 1. GCV-optimal (h, k) for IWSRTE 
 
 cat("Selecting (h, k) via GCV ...\n")
 
@@ -183,16 +176,16 @@ fit_rte <- best$fit
 fit_lse <- ridge_at_k(y, X, S_opt, 0)       # IWSLSE
 fit_pr  <- fit_par_ridge(y, X, best$k)       # parametric ridge at same k
 
-# ── 2. Performance metrics for each estimator ────────────────
+# ── 2. Performance metrics for each estimator 
 
 compute_metrics <- function(y, pi_hat, beta, P_hk = NULL, label) {
   pi_c <- clip_p(pi_hat)
   dev  <- -2 * sum(y * log(pi_c) + (1 - y) * log(1 - pi_c))
   mcr  <- mean(as.integer(pi_hat > 0.5) != y)
-  # AUC via Mann–Whitney
+
   pos <- pi_hat[y == 1]; neg <- pi_hat[y == 0]
   auc <- mean(outer(pos, neg, ">")) + 0.5 * mean(outer(pos, neg, "=="))
-  # Effective df
+
   edf <- if (!is.null(P_hk)) sum(diag(P_hk)) else length(beta)
   data.frame(Estimator = label,
              Deviance  = round(dev, 2),
@@ -210,9 +203,8 @@ metrics <- rbind(
 print(metrics)
 write.csv(metrics, "tables_real/table_real_performance.csv", row.names = FALSE)
 
-# ── 3. Coefficient table with SEs from Eq. (4.1) ─────────────
+# ── 3. Coefficient table with SEs
 
-# Asymptotic covariance matrix: Σ_k = R_k^{-1} X'ΩX R_k^{-1}
 om_rte <- fit_rte$pi_hat * (1 - fit_rte$pi_hat)
 M  <- diag(n) - S_opt
 Xt <- M %*% X
@@ -238,9 +230,7 @@ coef_table <- data.frame(
 write.csv(coef_table, "tables_real/table_real_coefficients.csv", row.names = FALSE)
 print(coef_table)
 
-# ── 4. Figure: fitted f(age) + partial residuals ─────────────
 
-# Partial residuals: V_i - x_i'β  (working response minus parametric fit)
 pi_rte <- fit_rte$pi_hat
 V_rte  <- logit(clip_p(pi_rte)) + (y - pi_rte) / (pi_rte * (1 - pi_rte))
 partial_rte <- V_rte - as.numeric(X %*% fit_rte$beta)
@@ -278,7 +268,7 @@ legend("topright", legend = c(expression(hat(f)(age)), "Partial residuals"),
 
 dev.off()
 
-# ── 5. Decision boundary in (age, glucose) plane ─────────────
+#  5. Decision boundary in (age, glucose) plane
 
 glu_idx  <- which(colnames(X) == "glucose")
 x_bar    <- colMeans(X)
