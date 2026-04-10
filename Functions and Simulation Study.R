@@ -1,23 +1,19 @@
 #Simulation Study for Modified kernel ridge type estimators in semiparametric logistic regression models 
-#(we can change the title)
 
-#!/usr/bin/env Rscript
-# ==============================================================
+
+
 # Monte Carlo Simulation: IWSRTE for Semiparametric Logistic
 #   Regression under Multicollinearity
-# ==============================================================
+
 
 cat("=== IWSRTE Simulation Study ===\n")
 cat("Start:", format(Sys.time()), "\n\n")
 
-# ── 0. CONFIGURATION ─────────────────────────────────────────
-
-# --- Full settings (uncomment for production) ---
  R_rep  <- 1000
  h_grid <- seq(0.08, 0.20, by = 0.05)
  k_grid <- seq(0.05, 2.0, by = 0.10)
 
-# --- Demo settings ---
+# --- Demo
 #R_rep  <- 10
 #h_grid <- seq(0.10, 0.45, by = 0.10)
 #k_grid <- seq(0, 2.0, by = 0.40)
@@ -39,13 +35,13 @@ dir.create("figures", showWarnings = FALSE)
 dir.create("tables",  showWarnings = FALSE)
 set.seed(2025)
 
-# ── 1. HELPERS ────────────────────────────────────────────────
+
 
 logit  <- function(p) log(p / (1 - p))
 expit  <- function(x) 1 / (1 + exp(-x))
 clip_p <- function(p, eps = 1e-8) pmin(pmax(p, eps), 1 - eps)
 
-# ── 2. LOCAL LINEAR SMOOTHER ─────────────────────────────────
+# ── 2. LOCAL LINEAR SMOOTHER
 
 build_smoother <- function(t_vec, h) {
   n <- length(t_vec)
@@ -66,7 +62,7 @@ build_smoother <- function(t_vec, h) {
   S
 }
 
-# ── 3. IRLS CONVERGENCE (k=0) ────────────────────────────────
+# ── 3. IRLS CONVERGENCE (k=0)
 
 irls_converge <- function(y, X, S_h) {
   n <- nrow(X); p <- ncol(X)
@@ -98,7 +94,7 @@ irls_converge <- function(y, X, S_h) {
        A=A, b_vec=b, ok=(s < max_iter))
 }
 
-# ── 4. RIDGE SWEEP ───────────────────────────────────────────
+# ── 4. RIDGE SWEEP 
 
 ridge_at_k <- function(y, X, S_h, k) {
   n <- nrow(X); p <- ncol(X)
@@ -132,7 +128,7 @@ ridge_at_k <- function(y, X, S_h, k) {
   list(beta=beta, f_hat=f_hat, pi_hat=pi_hat, P_hk=P_hk, ok=(s < max_iter))
 }
 
-# ── 5. CRITERIA ──────────────────────────────────────────────
+# ── 5. CRITERIA 
 
 sel_crit <- function(y, P_hk) {
   n    <- length(y)
@@ -147,7 +143,7 @@ sel_crit <- function(y, P_hk) {
   c(GCV=gcv, AICc=aicc, BIC=bic)
 }
 
-# ── 6. PARAMETRIC LOGISTIC RIDGE ─────────────────────────────
+# ── 6. PARAMETRIC LOGISTIC RIDGE 
 
 fit_par_ridge <- function(y, X, k=0) {
   n <- nrow(X); p <- ncol(X)
@@ -165,7 +161,7 @@ fit_par_ridge <- function(y, X, k=0) {
   list(beta=beta, pi_hat=pi_hat)
 }
 
-# ── 7. DATA GENERATION ──────────────────────────────────────
+# ── 7. DATA GENERATION 
 
 gen_data <- function(n, p, rho, beta) {
   z0 <- rnorm(n)
@@ -178,7 +174,7 @@ gen_data <- function(n, p, rho, beta) {
   list(y=y, X=X, t=tv, ft=ft)
 }
 
-# ── 8. MAIN LOOP ────────────────────────────────────────────
+# ── 8. MAIN LOOP
 
 all_res <- list()
 cid <- 0
@@ -329,7 +325,7 @@ for (p in p_vec) {
   }
 }
 
-# ── 9. TABLES ─────────────────────────────────────────────────
+
 
 cat("\n=== Tables ===\n")
 t1 <- do.call(rbind, lapply(all_res, function(r)
@@ -373,7 +369,7 @@ t5 <- do.call(rbind, lapply(all_res, function(r)
 rownames(t5)<-NULL; write.csv(t5,"tables/table5_criteria.csv",row.names=F)
 cat("Tables saved.\n")
 
-# ── 10. FIGURES ──────────────────────────────────────────────
+
 
 cat("=== Figures ===\n")
 C1<-"#2166AC"; C2<-"#B2182B"; C3<-"#4DAF4A"
